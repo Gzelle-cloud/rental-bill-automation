@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv(override=False)
 import os
 import json
 import base64
