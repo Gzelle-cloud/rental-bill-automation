@@ -1,13 +1,12 @@
-# 🏠 Rental Invoice Automation — AI-powered PDF → Excel
+# 🏠 Rental Bill Automation — AI-powered PDF → Excel
 
-> Automated processing of Russian municipal utility bills (ЖКХ) for rental property accounting.  
-> Extracts structured data from PDF receipts using Claude AI and populates an Excel workbook — replacing 15 minutes of manual work with a 15-second automated pipeline.
-
+> Automated processing of rental and utility bills from PDF into structured Excel outputs.  
+> Extracts key financial data using LLM-based document intelligence — reducing ~30 minutes of manual work to ~15 seconds.
 ---
 
 ## The Problem
 
-Every month, Russian landlords who rent out their apartments receive a utility bill (ЕПД) in PDF format. Calculating the tenant's share requires:
+Every month, landlords who rent out their apartments receive a utility bill (ЕПД) in PDF format. Calculating the tenant's share requires:
 
 1. Manually copying 15+ line items from the PDF into Excel
 2. Adding electricity costs from a separate source (МосЭнергоСбыт)
@@ -81,8 +80,8 @@ Finds the next empty month column by checking actual data rows (row 5), not head
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/YOUR_USERNAME/rental-invoice-automation
-cd rental-invoice-automation
+git clone https://github.com/Gzelle-cloud/rental-bill-automation
+cd rental-bill-automation
 python -m venv .venv
 .venv\Scripts\activate        # Windows
 # source .venv/bin/activate   # Mac/Linux
@@ -135,3 +134,14 @@ Built as a personal automation tool and portfolio project demonstrating:
 - Document intelligence with variable/unpredictable schema
 - End-to-end product thinking: problem definition → requirements → iterative testing → working solution
 - Prompt engineering for structured data extraction from unstructured documents
+- Originally built and tested on real-world municipal utility bills (ЖКХ), demonstrating robustness to semi-structured and evolving document formats
+
+---
+
+## Extensibility
+
+The system is designed with separation of concerns between extraction, schema definition, and business logic, enabling adaptation to other semi-structured financial documents.
+
+- Extraction layer is prompt-driven and can be adjusted for different PDF layouts
+- Data schema is explicitly defined and reusable across document types
+- Business logic is independent of document structure
