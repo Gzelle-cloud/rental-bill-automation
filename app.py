@@ -97,7 +97,10 @@ def normalize(name: str) -> str:
 
 
 def parse_with_claude(pdf_text: str) -> dict:
-    client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise RuntimeError("ANTHROPIC_API_KEY is missing in environment")
+    client = anthropic.Anthropic(api_key=api_key)
     response = client.messages.create(
         model="claude-sonnet-4-20250514",
         max_tokens=3000,
@@ -331,8 +334,10 @@ def download():
 
 @app.route('/debug')
 def debug():
-    key = os.environ.get("ANTHROPIC_API_KEY", "NOT FOUND")
-    return jsonify({"key_start": key[:15] if key != "NOT FOUND" else "NOT FOUND", "key_length": len(key)})
+    return jsonify({
+        "key_exists": "ANTHROPIC_API_KEY" in os.environ,
+        "key_preview": (os.environ.get("ANTHROPIC_API_KEY") or "")[:6] + "..." if os.environ.get("ANTHROPIC_API_KEY") else None
+    })
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5050))
