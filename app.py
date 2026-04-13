@@ -97,7 +97,7 @@ def normalize(name: str) -> str:
 
 
 def parse_with_claude(pdf_text: str) -> dict:
-    client = anthropic.Anthropic()
+    client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
     response = client.messages.create(
         model="claude-sonnet-4-20250514",
         max_tokens=3000,
