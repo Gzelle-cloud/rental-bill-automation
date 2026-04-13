@@ -1,6 +1,7 @@
-from dotenv import load_dotenv
-load_dotenv(override=False)
 import os
+if os.path.exists('.env'):
+    from dotenv import load_dotenv
+    load_dotenv()
 import json
 import base64
 import anthropic
