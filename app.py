@@ -329,6 +329,10 @@ def download():
         return jsonify({'error': 'Файл не найден, сначала обработайте квитанцию'}), 404
     return send_file(output_path, as_attachment=True, download_name=fname)
 
+@app.route('/debug')
+def debug():
+    key = os.environ.get("ANTHROPIC_API_KEY", "NOT FOUND")
+    return jsonify({"key_start": key[:15] if key != "NOT FOUND" else "NOT FOUND", "key_length": len(key)})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5050))
