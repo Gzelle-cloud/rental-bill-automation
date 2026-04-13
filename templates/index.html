@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ЖКХ → Excel</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    background: #f0f2f5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    width: 100%;
+    max-width: 560px;
+    overflow: hidden;
+  }
+  .header {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    padding: 28px 32px;
+  }
+  .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .header p { font-size: 14px; opacity: 0.85; }
+  .body { padding: 32px; }
+
+  .field { margin-bottom: 20px; }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .drop-zone {
+    border: 2px dashed #d1d5db;
+    border-radius: 10px;
+    padding: 32px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #6b7280;
+    font-size: 14px;
+    position: relative;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: #2563eb;
+    background: #eff6ff;
+    color: #2563eb;
+  }
+  .drop-zone .icon { font-size: 36px; margin-bottom: 8px; }
+  .drop-zone .hint { font-size: 12px; margin-top: 6px; opacity: 0.7; }
+  .drop-zone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer;
+  }
+  .drop-zone.has-file {
+    border-color: #10b981;
+    background: #f0fdf4;
+    color: #065f46;
+  }
+
+  input[type=number], input[type=text] {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: border-color 0.2s;
+    color: #111;
+  }
+  input[type=number]:focus, input[type=text]:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  }
+  .input-hint { font-size: 12px; color: #9ca3af; margin-top: 5px; }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+  .btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { background: #93c5fd; cursor: not-allowed; transform: none; }
+
+  .status {
+    margin-top: 24px;
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 14px;
+    display: none;
+  }
+  .status.loading {
+    display: flex; align-items: center; gap: 12px;
+    background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe;
+  }
+  .status.success { display: block; background: #f0fdf4; border: 1px solid #86efac; }
+  .status.error { display: block; background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid #bfdbfe;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .result-title { font-weight: 700; color: #065f46; font-size: 16px; margin-bottom: 12px; }
+  .result-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin-bottom: 16px;
+  }
+  .result-item { background: white; border-radius: 8px; padding: 10px 12px; }
+  .result-item .rl { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; }
+  .result-item .rv { font-size: 15px; font-weight: 600; color: #111; margin-top: 2px; }
+
+  .services-table {
+    width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px;
+    background: white; border-radius: 8px; overflow: hidden;
+  }
+  .services-table th {
+    background: #f3f4f6; padding: 8px 10px; text-align: left;
+    color: #374151; font-weight: 600; font-size: 11px; text-transform: uppercase;
+  }
+  .services-table td { padding: 7px 10px; border-top: 1px solid #f3f4f6; color: #374151; }
+  .services-table tr:hover td { background: #f9fafb; }
+
+  .download-btn {
+    display: block; width: 100%; padding: 12px;
+    background: #10b981; color: white; border: none;
+    border-radius: 8px; font-size: 15px; font-weight: 600;
+    cursor: pointer; text-align: center; text-decoration: none;
+    transition: all 0.2s;
+  }
+  .download-btn:hover { background: #059669; }
+
+  .warn { color: #b45309; font-size: 13px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <h1>🏠 ЖКХ → Excel</h1>
+    <p>Загрузите PDF-квитанцию — данные автоматически попадут в таблицу</p>
+  </div>
+  <div class="body">
+    <div class="field">
+      <label>Квитанция PDF</label>
+      <div class="drop-zone" id="dropZone">
+        <div class="icon">📄</div>
+        <div id="dropText">Перетащите PDF сюда или нажмите для выбора</div>
+        <div class="hint">Поддерживаются квитанции за любой месяц</div>
+        <input type="file" id="pdfInput" accept=".pdf">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Таблица Excel (необязательно)</label>
+      <div class="drop-zone" id="xlsxZone">
+        <div class="icon">📊</div>
+        <div id="xlsxText">Загрузите актуальный файл Квитанции.xlsx</div>
+        <div class="hint">Если не загружать — используется файл из папки приложения</div>
+        <input type="file" id="xlsxInput" accept=".xlsx">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Электроэнергия ИПУ (МосЭнергоСбыт)</label>
+      <input type="number" id="electricity" placeholder="Введите сумму в рублях" min="0" step="0.01">
+      <div class="input-hint">Сумма из личного кабинета МосЭнергоСбыт за этот месяц</div>
+    </div>
+
+    <div style="display:flex; gap:10px;">
+      <button class="btn" id="processBtn" onclick="processFile()" style="flex:1">
+        ⚡ Обработать квитанцию
+      </button>
+      <button class="btn" onclick="resetForm()" style="flex:0 0 auto; width:auto; padding:14px 20px; background:#6b7280;">
+        ↺ Сброс
+      </button>
+    </div>
+
+    <div class="status loading" id="statusLoading">
+      <div class="spinner"></div>
+      <span id="loadingText">AI читает квитанцию...</span>
+    </div>
+
+    <div class="status error" id="statusError"></div>
+
+    <div class="status success" id="statusSuccess">
+      <div class="result-title">✅ Готово! Данные извлечены</div>
+      <div class="result-grid">
+        <div class="result-item">
+          <div class="rl">Период</div>
+          <div class="rv" id="resPeriod">—</div>
+        </div>
+        <div class="result-item">
+          <div class="rl">Услуг найдено</div>
+          <div class="rv" id="resCount">—</div>
+        </div>
+        <div class="result-item">
+          <div class="rl">Электричество ИПУ</div>
+          <div class="rv" id="resElec">—</div>
+        </div>
+      </div>
+      <div id="warnUnmatched" class="warn" style="display:none"></div>
+      <table class="services-table" id="servicesTable">
+        <thead>
+          <tr>
+            <th>Услуга</th>
+            <th>Объём</th>
+            <th>Корректировка</th>
+          </tr>
+        </thead>
+        <tbody id="servicesTbody"></tbody>
+      </table>
+      <a id="downloadBtn" href="/download" class="download-btn">⬇ Скачать обновлённый Excel</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const dropZone = document.getElementById('dropZone');
+const pdfInput = document.getElementById('pdfInput');
+const xlsxZone = document.getElementById('xlsxZone');
+const xlsxInput = document.getElementById('xlsxInput');
+let selectedFile = null;
+let selectedXlsx = null;
+
+pdfInput.addEventListener('change', e => {
+  if (e.target.files[0]) setFile(e.target.files[0]);
+});
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+});
+
+xlsxInput.addEventListener('change', e => {
+  if (e.target.files[0]) setXlsx(e.target.files[0]);
+});
+xlsxZone.addEventListener('dragover', e => { e.preventDefault(); xlsxZone.classList.add('dragover'); });
+xlsxZone.addEventListener('dragleave', () => xlsxZone.classList.remove('dragover'));
+xlsxZone.addEventListener('drop', e => {
+  e.preventDefault(); xlsxZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) setXlsx(e.dataTransfer.files[0]);
+});
+
+function setFile(f) {
+  selectedFile = f;
+  dropZone.classList.add('has-file');
+  document.getElementById('dropText').textContent = '✓ ' + f.name;
+}
+
+function setXlsx(f) {
+  selectedXlsx = f;
+  xlsxZone.classList.add('has-file');
+  document.getElementById('xlsxText').textContent = '✓ ' + f.name;
+}
+
+function showStatus(type) {
+  ['Loading','Error','Success'].forEach(t =>
+    document.getElementById('status'+t).style.display = 'none'
+  );
+  if (type) document.getElementById('status'+type).style.display =
+    type === 'Loading' ? 'flex' : 'block';
+}
+
+async function processFile() {
+  if (!selectedFile) { alert('Выберите PDF-файл'); return; }
+
+  const elec = document.getElementById('electricity').value;
+  if (!elec) { alert('Введите сумму электроэнергии ИПУ'); return; }
+
+  const btn = document.getElementById('processBtn');
+  btn.disabled = true;
+  showStatus('Loading');
+
+  const steps = [
+    'AI читает квитанцию...',
+    'Извлекаем данные об услугах...',
+    'Рассчитываем корректировки...',
+    'Записываем в Excel...'
+  ];
+  let si = 0;
+  const lt = document.getElementById('loadingText');
+  const interval = setInterval(() => { si=(si+1)%steps.length; lt.textContent=steps[si]; }, 2000);
+
+  const fd = new FormData();
+  fd.append('pdf', selectedFile);
+  fd.append('electricity', elec);
+  if (selectedXlsx) fd.append('xlsx', selectedXlsx);
+
+  try {
+    const resp = await fetch('/process', { method: 'POST', body: fd });
+    const data = await resp.json();
+    clearInterval(interval);
+
+    if (data.error) {
+      showStatus('Error');
+      document.getElementById('statusError').textContent = '❌ ' + data.error;
+    } else {
+      document.getElementById('resPeriod').textContent = data.period || '—';
+      document.getElementById('resCount').textContent = data.services_count;
+      document.getElementById('resElec').textContent = data.electricity_ipu.toLocaleString('ru') + ' ₽';
+
+      const tbody = document.getElementById('servicesTbody');
+      tbody.innerHTML = '';
+      (data.services || []).forEach(s => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${s.name}</td><td>${s.volume ?? '—'}</td><td>${s.correction ?? 0}</td>`;
+        tbody.appendChild(tr);
+      });
+
+      // Update download link with correct filename
+      const fname = data.filename || 'Квитанции_updated.xlsx';
+      document.getElementById('downloadBtn').href = '/download?file=' + encodeURIComponent(fname);
+      document.getElementById('downloadBtn').textContent = '⬇ Скачать ' + fname;
+      showStatus('Success');
+    }
+  } catch(e) {
+    clearInterval(interval);
+    showStatus('Error');
+    document.getElementById('statusError').textContent = '❌ Ошибка соединения: ' + e.message;
+  }
+  btn.disabled = false;
+}
+
+function resetForm() {
+  selectedFile = null;
+  selectedXlsx = null;
+  dropZone.classList.remove('has-file');
+  xlsxZone.classList.remove('has-file');
+  document.getElementById('dropText').textContent = 'Перетащите PDF сюда или нажмите для выбора';
+  document.getElementById('xlsxText').textContent = 'Загрузите актуальный файл Квитанции.xlsx';
+  document.getElementById('electricity').value = '';
+  document.getElementById('processBtn').disabled = false;
+  showStatus(null);
+  pdfInput.value = '';
+  xlsxInput.value = '';
+}
+</script>
+</body>
+</html>
