@@ -80,7 +80,7 @@ Finds the next empty month column by checking actual data rows (row 5), not head
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/Gzelle-cloud/rental-bill-automation
+git clone https://github.com/Gzelle-cloud/rental-bill-automation.git
 cd rental-bill-automation
 python -m venv .venv
 .venv\Scripts\activate        # Windows
