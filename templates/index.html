@@ -29,7 +29,8 @@
     padding: 28px 32px;
   }
   .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-  .header p { font-size: 14px; opacity: 0.85; }
+  .header .en { font-size: 12px; opacity: 0.8; margin-bottom: 6px; }
+  .header .ru { font-size: 14px; opacity: 0.85; }
   .body { padding: 32px; }
 
   .field { margin-bottom: 20px; }
@@ -68,8 +69,7 @@
     background: #f0fdf4;
     color: #065f46;
   }
-
-  input[type=number], input[type=text] {
+  input[type=number] {
     width: 100%;
     padding: 11px 14px;
     border: 1.5px solid #d1d5db;
@@ -78,13 +78,12 @@
     transition: border-color 0.2s;
     color: #111;
   }
-  input[type=number]:focus, input[type=text]:focus {
+  input[type=number]:focus {
     outline: none;
     border-color: #2563eb;
     box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
   }
   .input-hint { font-size: 12px; color: #9ca3af; margin-top: 5px; }
-
   .btn {
     width: 100%;
     padding: 14px;
@@ -101,7 +100,6 @@
   .btn:hover { background: #1d4ed8; transform: translateY(-1px); }
   .btn:active { transform: translateY(0); }
   .btn:disabled { background: #93c5fd; cursor: not-allowed; transform: none; }
-
   .status {
     margin-top: 24px;
     border-radius: 10px;
@@ -115,7 +113,6 @@
   }
   .status.success { display: block; background: #f0fdf4; border: 1px solid #86efac; }
   .status.error { display: block; background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
-
   .spinner {
     width: 20px; height: 20px;
     border: 2px solid #bfdbfe;
@@ -125,27 +122,29 @@
     flex-shrink: 0;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  .result-title { font-weight: 700; color: #065f46; font-size: 16px; margin-bottom: 12px; }
-  .result-grid {
+  .result-title { font-weight: 700; color: #065f46; font-size: 16px; margin-bottom: 8px; }
+  .result-period { font-size: 13px; color: #374151; margin-bottom: 16px; }
+  .totals-grid {
     display: grid; grid-template-columns: 1fr 1fr;
-    gap: 8px; margin-bottom: 16px;
+    gap: 12px; margin-bottom: 16px;
   }
-  .result-item { background: white; border-radius: 8px; padding: 10px 12px; }
-  .result-item .rl { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; }
-  .result-item .rv { font-size: 15px; font-weight: 600; color: #111; margin-top: 2px; }
-
-  .services-table {
-    width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px;
-    background: white; border-radius: 8px; overflow: hidden;
+  .total-card {
+    border-radius: 10px; padding: 16px; text-align: center;
   }
-  .services-table th {
-    background: #f3f4f6; padding: 8px 10px; text-align: left;
-    color: #374151; font-weight: 600; font-size: 11px; text-transform: uppercase;
+  .total-card.tenant { background: #eff6ff; border: 1.5px solid #bfdbfe; }
+  .total-card.landlord { background: #f0fdf4; border: 1.5px solid #86efac; }
+  .total-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; margin-bottom: 6px;
   }
-  .services-table td { padding: 7px 10px; border-top: 1px solid #f3f4f6; color: #374151; }
-  .services-table tr:hover td { background: #f9fafb; }
-
+  .total-card.tenant .total-label { color: #1d4ed8; }
+  .total-card.landlord .total-label { color: #065f46; }
+  .total-amount {
+    font-size: 24px; font-weight: 700;
+  }
+  .total-card.tenant .total-amount { color: #1d4ed8; }
+  .total-card.landlord .total-amount { color: #065f46; }
+  .total-hint { font-size: 11px; color: #9ca3af; text-align: center; margin-bottom: 16px; }
   .download-btn {
     display: block; width: 100%; padding: 12px;
     background: #10b981; color: white; border: none;
@@ -154,17 +153,15 @@
     transition: all 0.2s;
   }
   .download-btn:hover { background: #059669; }
-
-  .warn { color: #b45309; font-size: 13px; margin-bottom: 8px; }
 </style>
 </head>
 <body>
 <div class="card">
   <div class="header">
     <h1>🏠 ЖКХ → Excel</h1>
-    <p style="opacity:1; font-size:13px; margin-bottom:6px;">Automated utility bill processing system (Russian ЖКХ). Upload PDF → structured Excel output.</p>
-    <p>Загрузите PDF-квитанцию — данные автоматически попадут в таблицу</p>
-</div>
+    <div class="en">Automated utility bill processing system (Russian ЖКХ). Upload PDF → structured Excel output.</div>
+    <div class="ru">Загрузите PDF-квитанцию — данные автоматически попадут в таблицу</div>
+  </div>
   <div class="body">
     <div class="field">
       <label>Квитанция PDF</label>
@@ -210,31 +207,20 @@
 
     <div class="status success" id="statusSuccess">
       <div class="result-title">✅ Готово! Данные извлечены</div>
-      <div class="result-grid">
-        <div class="result-item">
-          <div class="rl">Период</div>
-          <div class="rv" id="resPeriod">—</div>
+      <div class="result-period">Период: <strong id="resPeriod">—</strong></div>
+
+      <div class="totals-grid">
+        <div class="total-card tenant">
+          <div class="total-label">🏠 Арендатор платит</div>
+          <div class="total-amount" id="resTenant">—</div>
         </div>
-        <div class="result-item">
-          <div class="rl">Услуг найдено</div>
-          <div class="rv" id="resCount">—</div>
-        </div>
-        <div class="result-item">
-          <div class="rl">Электричество ИПУ</div>
-          <div class="rv" id="resElec">—</div>
+        <div class="total-card landlord">
+          <div class="total-label">👤 Арендодатель платит</div>
+          <div class="total-amount" id="resLandlord">—</div>
         </div>
       </div>
-      <div id="warnUnmatched" class="warn" style="display:none"></div>
-      <table class="services-table" id="servicesTable">
-        <thead>
-          <tr>
-            <th>Услуга</th>
-            <th>Объём</th>
-            <th>Корректировка</th>
-          </tr>
-        </thead>
-        <tbody id="servicesTbody"></tbody>
-      </table>
+      <div class="total-hint">ЖКХ + электроэнергия ИПУ (арендатор) · только ЖКХ (арендодатель)</div>
+
       <a id="downloadBtn" href="/download" class="download-btn">⬇ Скачать обновлённый Excel</a>
     </div>
   </div>
@@ -248,9 +234,7 @@ const xlsxInput = document.getElementById('xlsxInput');
 let selectedFile = null;
 let selectedXlsx = null;
 
-pdfInput.addEventListener('change', e => {
-  if (e.target.files[0]) setFile(e.target.files[0]);
-});
+pdfInput.addEventListener('change', e => { if (e.target.files[0]) setFile(e.target.files[0]); });
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop', e => {
@@ -258,9 +242,7 @@ dropZone.addEventListener('drop', e => {
   if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
 });
 
-xlsxInput.addEventListener('change', e => {
-  if (e.target.files[0]) setXlsx(e.target.files[0]);
-});
+xlsxInput.addEventListener('change', e => { if (e.target.files[0]) setXlsx(e.target.files[0]); });
 xlsxZone.addEventListener('dragover', e => { e.preventDefault(); xlsxZone.classList.add('dragover'); });
 xlsxZone.addEventListener('dragleave', () => xlsxZone.classList.remove('dragover'));
 xlsxZone.addEventListener('drop', e => {
@@ -273,13 +255,11 @@ function setFile(f) {
   dropZone.classList.add('has-file');
   document.getElementById('dropText').textContent = '✓ ' + f.name;
 }
-
 function setXlsx(f) {
   selectedXlsx = f;
   xlsxZone.classList.add('has-file');
   document.getElementById('xlsxText').textContent = '✓ ' + f.name;
 }
-
 function showStatus(type) {
   ['Loading','Error','Success'].forEach(t =>
     document.getElementById('status'+t).style.display = 'none'
@@ -290,7 +270,6 @@ function showStatus(type) {
 
 async function processFile() {
   if (!selectedFile) { alert('Выберите PDF-файл'); return; }
-
   const elec = document.getElementById('electricity').value;
   if (!elec) { alert('Введите сумму электроэнергии ИПУ'); return; }
 
@@ -298,12 +277,7 @@ async function processFile() {
   btn.disabled = true;
   showStatus('Loading');
 
-  const steps = [
-    'AI читает квитанцию...',
-    'Извлекаем данные об услугах...',
-    'Рассчитываем корректировки...',
-    'Записываем в Excel...'
-  ];
+  const steps = ['AI читает квитанцию...','Извлекаем данные об услугах...','Рассчитываем корректировки...','Записываем в Excel...'];
   let si = 0;
   const lt = document.getElementById('loadingText');
   const interval = setInterval(() => { si=(si+1)%steps.length; lt.textContent=steps[si]; }, 2000);
@@ -323,18 +297,11 @@ async function processFile() {
       document.getElementById('statusError').textContent = '❌ ' + data.error;
     } else {
       document.getElementById('resPeriod').textContent = data.period || '—';
-      document.getElementById('resCount').textContent = data.services_count;
-      document.getElementById('resElec').textContent = data.electricity_ipu.toLocaleString('ru') + ' ₽';
 
-      const tbody = document.getElementById('servicesTbody');
-      tbody.innerHTML = '';
-      (data.services || []).forEach(s => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${s.name}</td><td>${s.volume ?? '—'}</td><td>${s.correction ?? 0}</td>`;
-        tbody.appendChild(tr);
-      });
+      const fmt = v => v != null ? v.toLocaleString('ru', {minimumFractionDigits:2}) + ' ₽' : '—';
+      document.getElementById('resTenant').textContent = fmt(data.tenant_total);
+      document.getElementById('resLandlord').textContent = fmt(data.landlord_total);
 
-      // Update download link with correct filename
       const fname = data.filename || 'Квитанции_updated.xlsx';
       document.getElementById('downloadBtn').href = '/download?file=' + encodeURIComponent(fname);
       document.getElementById('downloadBtn').textContent = '⬇ Скачать ' + fname;
@@ -349,17 +316,14 @@ async function processFile() {
 }
 
 function resetForm() {
-  selectedFile = null;
-  selectedXlsx = null;
-  dropZone.classList.remove('has-file');
-  xlsxZone.classList.remove('has-file');
+  selectedFile = null; selectedXlsx = null;
+  dropZone.classList.remove('has-file'); xlsxZone.classList.remove('has-file');
   document.getElementById('dropText').textContent = 'Перетащите PDF сюда или нажмите для выбора';
   document.getElementById('xlsxText').textContent = 'Загрузите актуальный файл Квитанции.xlsx';
   document.getElementById('electricity').value = '';
   document.getElementById('processBtn').disabled = false;
   showStatus(null);
-  pdfInput.value = '';
-  xlsxInput.value = '';
+  pdfInput.value = ''; xlsxInput.value = '';
 }
 </script>
 </body>
