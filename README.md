@@ -59,9 +59,9 @@ Early version asked the AI to calculate corrections itself — it got the sign w
 **Formula injection**  
 Rather than relying on the template having pre-existing formulas, `app.py` writes all Excel formulas programmatically for the target column on every run. The template is a clean schema — no prior data required.
 
-**Dynamic column detection**  
-Finds the next empty month column by checking actual data rows (row 5), not header rows which contain `=EOMONTH()` formulas that appear as `None` in read-only mode — a subtle bug caught during testing.
-
+**Month-aware column detection**  
+Column is determined by the month name extracted from the PDF period (e.g. "март 2026" → column G). 
+Falls back to the first empty column if the month is unrecognised. An earlier version read `=EOMONTH()` header formulas which appeared as `None` in read-only mode — causing all data to land in January regardless of the actual month.
 ---
 
 ## Tech Stack
@@ -106,7 +106,7 @@ python app.py
 3. Upload your current Excel workbook — optional, uses clean template if not provided
 4. Enter the electricity amount from МосЭнергоСбыт personal account
 5. Click **Обработать квитанцию**
-6. Review extracted data in the on-screen table
+6. Review the calculated totals — tenant amount and landlord amount shown instantly
 7. Download the updated Excel — named automatically, e.g. `Квитанции_март_2026.xlsx`
 
 Next month, upload that downloaded file as the Excel input to accumulate the full year.
