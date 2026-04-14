@@ -354,6 +354,14 @@ def debug_hard():
         "has_key": "ANTHROPIC_API_KEY" in os.environ
     }
 
+@app.route('/debug-test')
+def debug():
+    import os
+    return {
+        "test_var": os.environ.get("TEST_VAR"),
+        "all_keys": list(os.environ.keys())
+    }
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5050))
     app.run(host='0.0.0.0', port=port)
