@@ -371,6 +371,15 @@ def debug_env():
         "keys_sample": list(os.environ.keys())[:20]
     }
 
+@app.route("/env-check")
+def env_check():
+    import os
+    return {
+        "ANTHROPIC": os.getenv("ANTHROPIC_API_KEY"),
+        "TOTAL": len(os.environ),
+        "HAS_PREFIX": [k for k in os.environ.keys() if "ANTHROPIC" in k]
+    }
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5050))
     app.run(host='0.0.0.0', port=port)
