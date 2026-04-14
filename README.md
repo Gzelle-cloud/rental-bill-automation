@@ -2,6 +2,9 @@
 
 > Automated processing of rental and utility bills from PDF into structured Excel outputs.  
 > Extracts key financial data using LLM-based document intelligence — reducing ~30 minutes of manual work to ~15 seconds.
+
+🔗 [Live Demo](https://rental-bill-automation-production.up.railway.app/)
+
 ---
 
 ## The Problem
@@ -62,6 +65,7 @@ Rather than relying on the template having pre-existing formulas, `app.py` write
 **Month-aware column detection**  
 Column is determined by the month name extracted from the PDF period (e.g. "март 2026" → column G). 
 Falls back to the first empty column if the month is unrecognised. An earlier version read `=EOMONTH()` header formulas which appeared as `None` in read-only mode — causing all data to land in January regardless of the actual month.
+
 ---
 
 ## Tech Stack
@@ -73,6 +77,7 @@ Falls back to the first empty column if the month is unrecognised. An earlier ve
 | PDF parsing | pypdf |
 | Excel | openpyxl |
 | Frontend | Vanilla HTML / CSS / JS, drag-and-drop UI |
+| Deployment | Railway |
 
 ---
 
@@ -101,13 +106,18 @@ python app.py
 
 ## Usage
 
-1. Open `http://localhost:5050`
-2. Upload the monthly PDF utility bill (drag & drop)
-3. Upload your current Excel workbook — optional, uses clean template if not provided
-4. Enter the electricity amount from МосЭнергоСбыт personal account
-5. Click **Обработать квитанцию**
-6. Review the calculated totals — tenant amount and landlord amount shown instantly
-7. Download the updated Excel — named automatically, e.g. `Квитанции_март_2026.xlsx`
+### Try it live
+🔗 [rental-bill-automation-production.up.railway.app](https://rental-bill-automation-production.up.railway.app/)
+
+### Or run locally
+After completing local setup above, open `http://localhost:5050`
+
+1. Upload the monthly PDF utility bill (drag & drop)
+2. Upload your current Excel workbook — optional, uses clean template if not provided
+3. Enter the electricity amount from МосЭнергоСбыт personal account
+4. Click **Обработать квитанцию**
+5. Review the calculated totals — tenant amount and landlord amount shown instantly
+6. Download the updated Excel — named automatically, e.g. `Квитанции_март_2026.xlsx`
 
 Next month, upload that downloaded file as the Excel input to accumulate the full year.
 
