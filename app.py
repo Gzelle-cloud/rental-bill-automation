@@ -339,6 +339,13 @@ def debug():
         "key_preview": (os.environ.get("ANTHROPIC_API_KEY") or "")[:6] + "..." if os.environ.get("ANTHROPIC_API_KEY") else None
     })
 
+@app.route('/debug-full')
+def debug_full():
+    import os
+    return {
+        "env_keys": list(os.environ.keys())
+    }
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5050))
     app.run(host='0.0.0.0', port=port)
