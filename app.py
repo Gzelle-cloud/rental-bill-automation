@@ -128,8 +128,23 @@ def find_row_info(name: str) -> dict | None:
     return None
 
 
-def find_month_column(wb) -> int | None:
-    """Find next empty column by checking row 5 (actual volume data)."""
+MONTH_TO_COL = {
+    'январь': 5, 'февраль': 6, 'март': 7, 'апрель': 8,
+    'май': 9, 'июнь': 10, 'июль': 11, 'август': 12,
+    'сентябрь': 13, 'октябрь': 14, 'ноябрь': 15, 'декабрь': 16,
+}
+
+def find_month_column(wb, period: str = '') -> int | None:
+    """Determine target column from period name (e.g. 'март 2026' → col 7).
+    Falls back to first empty column in row 5 if period is unrecognised.
+    Col 5=Jan, 6=Feb, 7=Mar ... 16=Dec.
+    """
+    if period:
+        month = period.strip().lower().split()[0]  # 'март 2026' → 'март'
+        col = MONTH_TO_COL.get(month)
+        if col:
+            return col
+    # Fallback: first empty slot in row 5
     ws = wb['Рассчёты']
     for col in range(5, 18):
         if ws.cell(row=5, column=col).value in (None, ''):
@@ -248,7 +263,7 @@ def write_to_excel(parsed: dict, electricity_ipu: float, output_path: str, sourc
     wb = load_workbook(output_path)
     ws = wb['Рассчёты']
 
-    col = find_month_column(wb)
+    col = find_month_column(wb, parsed.get('period', ''))
     if col is None:
         raise ValueError("Нет свободных колонок в таблице (все 12 месяцев заполнены)")
 
