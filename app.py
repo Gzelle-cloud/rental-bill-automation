@@ -355,7 +355,7 @@ def debug_hard():
     }
 
 @app.route('/debug-test')
-def debug():
+def debug_test():
     import os
     return {
         "test_var": os.environ.get("TEST_VAR"),
