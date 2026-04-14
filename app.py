@@ -362,6 +362,15 @@ def debug_test():
         "all_keys": list(os.environ.keys())
     }
 
+@app.route('/debug-env')
+def debug_env():
+    import os
+    return {
+        "anthropic": os.environ.get("ANTHROPIC_API_KEY"),
+        "count": len(os.environ),
+        "keys_sample": list(os.environ.keys())[:20]
+    }
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5050))
     app.run(host='0.0.0.0', port=port)
