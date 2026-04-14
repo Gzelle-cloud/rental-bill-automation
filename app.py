@@ -332,54 +332,6 @@ def download():
         return jsonify({'error': 'Файл не найден, сначала обработайте квитанцию'}), 404
     return send_file(output_path, as_attachment=True, download_name=fname)
 
-@app.route('/debug')
-def debug():
-    return jsonify({
-        "key_exists": "ANTHROPIC_API_KEY" in os.environ,
-        "key_preview": (os.environ.get("ANTHROPIC_API_KEY") or "")[:6] + "..." if os.environ.get("ANTHROPIC_API_KEY") else None
-    })
-
-@app.route('/debug-full')
-def debug_full():
-    import os
-    return {
-        "env_keys": list(os.environ.keys())
-    }
-
-@app.route('/debug-hard')
-def debug_hard():
-    import os
-    return {
-        "env_count": len(os.environ),
-        "has_key": "ANTHROPIC_API_KEY" in os.environ
-    }
-
-@app.route('/debug-test')
-def debug_test():
-    import os
-    return {
-        "test_var": os.environ.get("TEST_VAR"),
-        "all_keys": list(os.environ.keys())
-    }
-
-@app.route('/debug-env')
-def debug_env():
-    import os
-    return {
-        "anthropic": os.environ.get("ANTHROPIC_API_KEY"),
-        "count": len(os.environ),
-        "keys_sample": list(os.environ.keys())[:20]
-    }
-
-@app.route("/env-check")
-def env_check():
-    import os
-    return {
-        "ANTHROPIC": os.getenv("ANTHROPIC_API_KEY"),
-        "TOTAL": len(os.environ),
-        "HAS_PREFIX": [k for k in os.environ.keys() if "ANTHROPIC" in k]
-    }
-
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5050))
     app.run(host='0.0.0.0', port=port)
