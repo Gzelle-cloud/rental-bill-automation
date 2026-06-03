@@ -218,8 +218,8 @@ def write_formulas(ws, col: int):
     # 2.3 К оплате (жилищные)
     for pay_row, calc_row, corr_row in [(47,25,36),(48,26,37),(49,27,38),(50,28,39),
                                          (51,29,40),(52,30,41),(53,31,42),(54,32,43)]:
-        ws.cell(row=pay_row, column=col).value = f'=SUM({C}{calc_row},{C}{corr_row})'
-    ws.cell(row=55, column=col).value = f'=SUM({C}33,{C}44)'
+        ws.cell(row=pay_row, column=col).value = f'=ROUND(SUM({C}{calc_row},{C}{corr_row}),2)'
+    ws.cell(row=55, column=col).value = f'=ROUND(SUM({C}33,{C}44),2)'
     ws.cell(row=56, column=col).value = f'=SUM({C}47:{C}55)'
 
     # 3.1 Начислено по тарифу (коммунальные)
@@ -233,7 +233,7 @@ def write_formulas(ws, col: int):
     # 3.3 К оплате (коммунальные) с IF > 0
     for pay_row, calc_row, corr_row in [(76,60,68),(77,61,69),(78,62,70),
                                          (79,63,71),(80,64,72),(81,65,73)]:
-        ws.cell(row=pay_row, column=col).value = f'=IF(SUM({C}{calc_row},{C}{corr_row})>0,SUM({C}{calc_row},{C}{corr_row}),0)'
+        ws.cell(row=pay_row, column=col).value = f'=IF(SUM({C}{calc_row},{C}{corr_row})>0,ROUND(SUM({C}{calc_row},{C}{corr_row}),2),0)'
     ws.cell(row=82, column=col).value = f'=SUM({C}76:{C}81)'
 
     # 4. Итоги
