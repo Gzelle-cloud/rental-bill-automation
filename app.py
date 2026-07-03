@@ -100,7 +100,7 @@ def parse_with_claude(pdf_text: str) -> dict:
         raise RuntimeError("ANTHROPIC_API_KEY is missing in environment")
     client = anthropic.Anthropic(api_key=api_key)
     response = client.messages.create(
-        model="claude-sonnet-4-20250514",
+        model="claude-sonnet-4-5",
         max_tokens=3000,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": f"Текст квитанции:\n\n{pdf_text}"}]
