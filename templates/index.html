@@ -8,71 +8,145 @@
 </head>
 <body>
 <div class="card">
+
   <div class="header">
-    <h1>🏠 ЖКХ → Excel</h1>
-    <div class="en">Automated utility bill processing system (Russian ЖКХ). Upload PDF → structured Excel output.</div>
-    <div class="ru">Загрузите PDF-квитанцию — данные автоматически попадут в таблицу</div>
+    <div class="header-top">
+      <h1 data-ru="Квитанция → Excel" data-en="Utility Bill → Excel">Квитанция → Excel</h1>
+      <div class="lang-toggle">
+        <button class="lang-btn active" id="btnRu" onclick="setLang('ru')">RU</button>
+        <button class="lang-btn"        id="btnEn" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+    <div class="header-sub"
+      data-ru="Загрузите PDF-квитанцию — данные автоматически попадут в таблицу Excel"
+      data-en="Upload a PDF utility bill — data is extracted automatically and written to Excel">
+      Загрузите PDF-квитанцию — данные автоматически попадут в таблицу Excel
+    </div>
   </div>
+
   <div class="body">
+
     <div class="field">
-      <label>Квитанция PDF</label>
+      <label class="field-label" data-ru="Квитанция PDF" data-en="Utility bill PDF">Квитанция PDF</label>
       <div class="drop-zone" id="dropZone">
-        <div class="icon">📄</div>
-        <div id="dropText">Перетащите PDF сюда или нажмите для выбора</div>
-        <div class="hint">Поддерживаются квитанции за любой месяц</div>
+        <i data-lucide="file-text" class="dz-icon"></i>
+        <div id="dropText"
+          data-ru="Перетащите PDF или нажмите для выбора"
+          data-en="Drag PDF here or click to browse">
+          Перетащите PDF или нажмите для выбора
+        </div>
         <input type="file" id="pdfInput" accept=".pdf">
       </div>
     </div>
 
     <div class="field">
-      <label>Таблица Excel (необязательно)</label>
+      <label class="field-label"
+        data-ru="Таблица Excel (необязательно)"
+        data-en="Excel workbook (optional)">
+        Таблица Excel (необязательно)
+      </label>
       <div class="drop-zone" id="xlsxZone">
-        <div class="icon">📊</div>
-        <div id="xlsxText">Загрузите актуальный файл Квитанции.xlsx</div>
-        <div class="hint">Если не загружать — используется файл из папки приложения</div>
+        <i data-lucide="file-spreadsheet" class="dz-icon"></i>
+        <div id="xlsxText"
+          data-ru="Загрузите актуальный файл Квитанции.xlsx"
+          data-en="Upload your current Kvitanciya.xlsx">
+          Загрузите актуальный файл Квитанции.xlsx
+        </div>
+        <div class="dz-hint"
+          data-ru="Если не загружать — используется чистый шаблон"
+          data-en="If not provided, a blank template is used">
+          Если не загружать — используется чистый шаблон
+        </div>
         <input type="file" id="xlsxInput" accept=".xlsx">
       </div>
     </div>
 
     <div class="field">
-      <label>Электроэнергия ИПУ (МосЭнергоСбыт)</label>
-      <input type="number" id="electricity" placeholder="Введите сумму в рублях" min="0" step="0.01">
-      <div class="input-hint">Сумма из личного кабинета МосЭнергоСбыт за этот месяц</div>
+      <label class="field-label" for="electricity"
+        data-ru="Электроэнергия ИПУ (МосЭнергоСбыт)"
+        data-en="Electricity — individual meter (МосЭнергоСбыт)">
+        Электроэнергия ИПУ (МосЭнергоСбыт)
+      </label>
+      <input class="number-input" type="number" id="electricity"
+        data-placeholder-ru="Сумма в рублях"
+        data-placeholder-en="Amount in rubles"
+        placeholder="Сумма в рублях" min="0" step="0.01">
+      <div class="field-hint"
+        data-ru="Сумма из личного кабинета МосЭнергоСбыт за этот месяц"
+        data-en="Amount from your МосЭнергоСбыт account for this month">
+        Сумма из личного кабинета МосЭнергоСбыт за этот месяц
+      </div>
     </div>
 
     <div class="btn-group">
-      <button class="btn btn-primary" id="processBtn">⚡ Обработать квитанцию</button>
-      <button class="btn btn-reset" id="resetBtn">↺ Сброс</button>
+      <button class="btn btn-primary" id="processBtn"
+        data-ru="Обработать квитанцию"
+        data-en="Process bill">
+        <i data-lucide="wand-sparkles"></i>
+        <span data-ru="Обработать квитанцию" data-en="Process bill">Обработать квитанцию</span>
+      </button>
+      <button class="btn btn-reset" id="resetBtn"
+        data-ru="↺ Сброс"
+        data-en="↺ Reset">
+        ↺ Сброс
+      </button>
     </div>
 
     <div class="status loading" id="statusLoading">
       <div class="spinner"></div>
-      <span id="loadingText">AI читает квитанцию...</span>
+      <span id="loadingText"
+        data-ru="AI читает квитанцию..."
+        data-en="AI is reading the bill...">
+        AI читает квитанцию...
+      </span>
     </div>
 
     <div class="status error" id="statusError"></div>
 
     <div class="status success" id="statusSuccess">
-      <div class="result-title">✅ Готово! Данные извлечены</div>
-      <div class="result-period">Период: <strong id="resPeriod">—</strong></div>
+      <div class="result-title">
+        <i data-lucide="check"></i>
+        <span data-ru="Готово — данные извлечены" data-en="Done — data extracted">Готово — данные извлечены</span>
+      </div>
+      <div class="result-period">
+        <span data-ru="Период:" data-en="Period:">Период:</span>
+        <strong id="resPeriod">—</strong>
+      </div>
 
       <div class="totals-grid">
         <div class="total-card tenant">
-          <div class="total-label">🏠 Арендатор платит</div>
+          <div class="total-label">
+            <i data-lucide="house"></i>
+            <span data-ru="Арендатор платит" data-en="Tenant pays">Арендатор платит</span>
+          </div>
           <div class="total-amount" id="resTenant">—</div>
         </div>
         <div class="total-card landlord">
-          <div class="total-label">👤 Арендодатель платит</div>
+          <div class="total-label">
+            <i data-lucide="user-round"></i>
+            <span data-ru="Арендодатель платит" data-en="Landlord pays">Арендодатель платит</span>
+          </div>
           <div class="total-amount" id="resLandlord">—</div>
         </div>
       </div>
-      <div class="total-hint">ЖКХ + электроэнергия ИПУ (арендатор) · только ЖКХ (арендодатель)</div>
 
-      <a id="downloadBtn" href="/download" class="download-btn">⬇ Скачать обновлённый Excel</a>
+      <div class="total-hint"
+        data-ru="ЖКХ + электроэнергия ИПУ (арендатор) · только ЖКХ (арендодатель)"
+        data-en="Utility bills + electricity meter (tenant) · utility bills only (landlord)">
+        ЖКХ + электроэнергия ИПУ (арендатор) · только ЖКХ (арендодатель)
+      </div>
+
+      <a id="downloadBtn" href="/download" class="download-btn">
+        <i data-lucide="arrow-down-to-line"></i>
+        <span data-ru="Скачать обновлённый Excel" data-en="Download updated Excel">Скачать обновлённый Excel</span>
+      </a>
     </div>
+
   </div>
 </div>
 
-  <script src="{{ url_for('static', filename='main.js') }}"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+<script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
 </html>
