@@ -1,97 +1,59 @@
-// DOM Elements
-const dropZone = document.getElementById('dropZone');
-const pdfInput = document.getElementById('pdfInput');
-const xlsxZone = document.getElementById('xlsxZone');
-const xlsxInput = document.getElementById('xlsxInput');
-const processBtn = document.getElementById('processBtn');
-const resetBtn = document.getElementById('resetBtn');
-const electricityInput = document.getElementById('electricity');
+// ── Language ──────────────────────────────────────────────────────────────
+let currentLang = 'ru';
 
-// State
+function setLang(lang) {
+  currentLang = lang;
+  document.getElementById('btnRu').classList.toggle('active', lang === 'ru');
+  document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+  document.documentElement.lang = lang;
+
+  document.querySelectorAll('[data-ru][data-en]').forEach(el => {
+    const val = el.dataset[lang];
+    if (val !== undefined) el.textContent = val;
+  });
+
+  // Placeholder needs separate handling
+  const elec = document.getElementById('electricity');
+  elec.placeholder = elec.dataset[`placeholder${lang.charAt(0).toUpperCase() + lang.slice(1)}`] || '';
+}
+
+// ── File inputs ───────────────────────────────────────────────────────────
+const dropZone  = document.getElementById('dropZone');
+const pdfInput  = document.getElementById('pdfInput');
+const xlsxZone  = document.getElementById('xlsxZone');
+const xlsxInput = document.getElementById('xlsxInput');
 let selectedFile = null;
 let selectedXlsx = null;
 
-// Initialize event listeners
-function initializeEventListeners() {
-  // PDF file input
-  pdfInput.addEventListener('change', handlePdfChange);
-  
-  // PDF drop zone
-  dropZone.addEventListener('dragover', handleDragOver);
-  dropZone.addEventListener('dragleave', handleDragLeave);
-  dropZone.addEventListener('drop', handlePdfDrop);
+pdfInput.addEventListener('change', e => { if (e.target.files[0]) setFile(e.target.files[0]); });
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+});
 
-  // XLSX file input
-  xlsxInput.addEventListener('change', handleXlsxChange);
-  
-  // XLSX drop zone
-  xlsxZone.addEventListener('dragover', handleDragOver);
-  xlsxZone.addEventListener('dragleave', handleDragLeave);
-  xlsxZone.addEventListener('drop', handleXlsxDrop);
+xlsxInput.addEventListener('change', e => { if (e.target.files[0]) setXlsx(e.target.files[0]); });
+xlsxZone.addEventListener('dragover', e => { e.preventDefault(); xlsxZone.classList.add('dragover'); });
+xlsxZone.addEventListener('dragleave', () => xlsxZone.classList.remove('dragover'));
+xlsxZone.addEventListener('drop', e => {
+  e.preventDefault(); xlsxZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) setXlsx(e.dataTransfer.files[0]);
+});
 
-  // Buttons
-  processBtn.addEventListener('click', processFile);
-  resetBtn.addEventListener('click', resetForm);
-}
-
-// Handle PDF file selection from input
-function handlePdfChange(event) {
-  if (event.target.files[0]) {
-    setFile(event.target.files[0]);
-  }
-}
-
-// Handle XLSX file selection from input
-function handleXlsxChange(event) {
-  if (event.target.files[0]) {
-    setXlsx(event.target.files[0]);
-  }
-}
-
-// Handle drag over for any drop zone
-function handleDragOver(event) {
-  event.preventDefault();
-  event.currentTarget.classList.add('dragover');
-}
-
-// Handle drag leave for any drop zone
-function handleDragLeave(event) {
-  event.currentTarget.classList.remove('dragover');
-}
-
-// Handle PDF file drop
-function handlePdfDrop(event) {
-  event.preventDefault();
-  dropZone.classList.remove('dragover');
-  if (event.dataTransfer.files[0]) {
-    setFile(event.dataTransfer.files[0]);
-  }
-}
-
-// Handle XLSX file drop
-function handleXlsxDrop(event) {
-  event.preventDefault();
-  xlsxZone.classList.remove('dragover');
-  if (event.dataTransfer.files[0]) {
-    setXlsx(event.dataTransfer.files[0]);
-  }
-}
-
-// Set selected PDF file and update UI
-function setFile(file) {
-  selectedFile = file;
+function setFile(f) {
+  selectedFile = f;
   dropZone.classList.add('has-file');
-  document.getElementById('dropText').textContent = '✓ ' + file.name;
+  document.getElementById('dropText').textContent = '✓ ' + f.name;
 }
 
-// Set selected XLSX file and update UI
-function setXlsx(file) {
-  selectedXlsx = file;
+function setXlsx(f) {
+  selectedXlsx = f;
   xlsxZone.classList.add('has-file');
-  document.getElementById('xlsxText').textContent = '✓ ' + file.name;
+  document.getElementById('xlsxText').textContent = '✓ ' + f.name;
 }
 
-// Show status message (loading, success, error)
+// ── Status ────────────────────────────────────────────────────────────────
 function showStatus(type) {
   ['Loading', 'Error', 'Success'].forEach(t => {
     document.getElementById('status' + t).style.display = 'none';
@@ -102,120 +64,91 @@ function showStatus(type) {
   }
 }
 
-// Create FormData from current state
-function createFormData() {
+// ── Process ───────────────────────────────────────────────────────────────
+const LOADING_STEPS = {
+  ru: ['AI читает квитанцию...', 'Извлекаем данные...', 'Считаем корректировки...', 'Записываем в Excel...'],
+  en: ['AI is reading the bill...', 'Extracting data...', 'Calculating corrections...', 'Writing to Excel...'],
+};
+
+async function processFile() {
+  if (!selectedFile) {
+    alert(currentLang === 'ru' ? 'Выберите PDF-файл' : 'Please select a PDF file');
+    return;
+  }
+  const elec = document.getElementById('electricity').value;
+  if (!elec) {
+    alert(currentLang === 'ru' ? 'Введите сумму электроэнергии ИПУ' : 'Please enter the electricity amount');
+    return;
+  }
+
+  const btn = document.getElementById('processBtn');
+  btn.disabled = true;
+  showStatus('Loading');
+
+  const steps = LOADING_STEPS[currentLang];
+  let si = 0;
+  const lt = document.getElementById('loadingText');
+  lt.textContent = steps[0];
+  const interval = setInterval(() => { si = (si + 1) % steps.length; lt.textContent = steps[si]; }, 2000);
+
   const fd = new FormData();
   fd.append('pdf', selectedFile);
-  fd.append('electricity', electricityInput.value);
-  if (selectedXlsx) {
-    fd.append('xlsx', selectedXlsx);
-  }
-  return fd;
-}
-
-// Update loading progress text
-function startLoadingAnimation() {
-  const steps = [
-    'AI читает квитанцию...',
-    'Извлекаем данные об услугах...',
-    'Рассчитываем корректировки...',
-    'Записываем в Excel...',
-  ];
-  let stepIndex = 0;
-  const loadingText = document.getElementById('loadingText');
-  return setInterval(() => {
-    stepIndex = (stepIndex + 1) % steps.length;
-    loadingText.textContent = steps[stepIndex];
-  }, 2000);
-}
-
-// Format number as Russian rubles rounded to whole rubles 
-function formatRubles(value) {
-  if (value == null) return '—';
-  return Math.round(value).toLocaleString('ru') + ' ₽';
-}
-
-// Update result display with response data 
-function updateResultDisplay(data) {
-  document.getElementById('resPeriod').textContent = data.period || '—';
-  document.getElementById('resTenant').textContent = formatRubles(data.tenant_total);
-  document.getElementById('resLandlord').textContent = formatRubles(data.landlord_total);
-
-  const filename = data.filename || 'Квитанции_updated.xlsx';
-  const downloadBtn = document.getElementById('downloadBtn');
-  downloadBtn.href = '/download?file=' + encodeURIComponent(filename);
-  downloadBtn.textContent = '⬇ Скачать ' + filename;
-}
-
-// Show error message
-function showError(message) {
-  showStatus('Error');
-  document.getElementById('statusError').textContent = '❌ ' + message;
-}
-
-// Main process file function 
-async function processFile() {
-  // Validate inputs
-  if (!selectedFile) {
-    alert('Выберите PDF-файл');
-    return;
-  }
-  if (!electricityInput.value) {
-    alert('Введите сумму электроэнергии ИПУ');
-    return;
-  }
-
-  // Disable button and show loading
-  processBtn.disabled = true;
-  showStatus('Loading');
-  const interval = startLoadingAnimation();
+  fd.append('electricity', elec);
+  if (selectedXlsx) fd.append('xlsx', selectedXlsx);
 
   try {
-    // Send request
-    const response = await fetch('/process', {
-      method: 'POST',
-      body: createFormData(),
-    });
-    const data = await response.json();
-
-    // Handle response
-    if (data.error) {
-      showError(data.error);
-    } else {
-      updateResultDisplay(data);
-      showStatus('Success');
-    }
-  } catch (error) {
-    showError('Ошибка соединения: ' + error.message);
-  } finally {
+    const resp = await fetch('/process', { method: 'POST', body: fd });
+    const data = await resp.json();
     clearInterval(interval);
-    processBtn.disabled = false;
+
+    if (data.error) {
+      showStatus('Error');
+      document.getElementById('statusError').textContent = '❌ ' + data.error;
+    } else {
+      document.getElementById('resPeriod').textContent = data.period || '—';
+
+      const fmt = v => v != null ? Math.round(v).toLocaleString('ru') + ' ₽' : '—';
+      document.getElementById('resTenant').textContent   = fmt(data.tenant_total);
+      document.getElementById('resLandlord').textContent = fmt(data.landlord_total);
+
+      const fname = data.filename || 'Квитанции_updated.xlsx';
+      const dlBtn = document.getElementById('downloadBtn');
+      dlBtn.href = '/download?file=' + encodeURIComponent(fname);
+      dlBtn.textContent = (currentLang === 'ru' ? '⬇ Скачать ' : '⬇ Download ') + fname;
+
+      // Re-apply language to success block static strings
+      setLang(currentLang);
+      // But restore dynamic content overwritten by setLang
+      document.getElementById('resPeriod').textContent = data.period || '—';
+      document.getElementById('resTenant').textContent   = fmt(data.tenant_total);
+      document.getElementById('resLandlord').textContent = fmt(data.landlord_total);
+      dlBtn.textContent = (currentLang === 'ru' ? '⬇ Скачать ' : '⬇ Download ') + fname;
+
+      showStatus('Success');
+      lucide.createIcons();
+    }
+  } catch (e) {
+    clearInterval(interval);
+    showStatus('Error');
+    document.getElementById('statusError').textContent = '❌ ' + (currentLang === 'ru' ? 'Ошибка соединения: ' : 'Connection error: ') + e.message;
   }
+  btn.disabled = false;
 }
 
-// Reset form to initial state
+// ── Reset ─────────────────────────────────────────────────────────────────
 function resetForm() {
-  // Clear state
   selectedFile = null;
   selectedXlsx = null;
-
-  // Reset UI
   dropZone.classList.remove('has-file');
   xlsxZone.classList.remove('has-file');
-  document.getElementById('dropText').textContent =
-    'Перетащите PDF сюда или нажмите для выбора';
-  document.getElementById('xlsxText').textContent =
-    'Загрузите актуальный файл Квитанции.xlsx';
-  electricityInput.value = '';
-  processBtn.disabled = false;
-
-  // Clear inputs
+  setLang(currentLang); // restore translated placeholders
+  document.getElementById('electricity').value = '';
+  document.getElementById('processBtn').disabled = false;
+  showStatus(null);
   pdfInput.value = '';
   xlsxInput.value = '';
-
-  // Hide status
-  showStatus(null);
 }
 
-// Initialize on DOM ready
-document.addEventListener('DOMContentLoaded', initializeEventListeners);
+// ── Event listeners ───────────────────────────────────────────────────────
+document.getElementById('processBtn').addEventListener('click', processFile);
+document.getElementById('resetBtn').addEventListener('click', resetForm);
