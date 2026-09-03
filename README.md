@@ -1,4 +1,4 @@
-# 🏠 Rental Bill Automation — AI-powered PDF → Excel
+# Rental Bill Automation — AI-powered PDF → Excel
 
 > Automated processing of rental and utility bills from PDF into structured Excel outputs.  
 > Extracts key financial data using LLM-based document intelligence — reducing ~30 minutes of manual work to ~15 seconds.
