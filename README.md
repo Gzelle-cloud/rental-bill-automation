@@ -21,6 +21,11 @@ The PDF structure **changes month to month** — different columns appear and di
 **Solution:** LLM-based document intelligence that understands the table semantically, not positionally.
 
 ---
+## Preview
+
+![App UI](docs/screenshot.png)
+
+---
 
 ## How It Works
 
